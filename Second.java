@@ -18,11 +18,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView.BufferType;
 
 public class Second extends Activity {
 	private TableLayout t1;
 	private Grade_Calc  calculator;
-	Calc_db db = new Calc_db(this);
+	Calc_db data = new Calc_db(Second.this);
 
 
 	@SuppressLint("NewApi")
@@ -33,25 +34,37 @@ public class Second extends Activity {
 		if (Build.VERSION.SDK_INT >=Build.VERSION_CODES.HONEYCOMB){
 			getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
-		//dbHelper = new DbHelper(this);
-		//Intent intent = getIntent();
 		t1 = (TableLayout) findViewById(R.id.mainTable);
+
 		System.out.println("before");
+		data.open();
+		List<Entry> grade_w = populateList();
+		if (grade_w.size()>0){
+			populateTable();
+			System.out.println("yahh");
+		}
 		
-		
-		
-		
-		
-	//check to see if database is null
-	//if not call  populateList()
-		//populate table using addRow()
-	}
+		data.close();
+		}
+	
 	public void validate(View v){
+		data.open();
+		retrieveData();
+		List<Entry> grade_weight = populateList();
+		data.close();
+		calculator = new Grade_Calc(grade_weight);
+		double avg = calculator.getAvgGrade();
+		DecimalFormat df = new DecimalFormat("#.##");
+		String sAvg=String.valueOf(df.format(avg));
+		EditText editTextGrade = (EditText) findViewById(R.id.EditTextGrade);
+		editTextGrade.setText(sAvg);
+		
+		//double NeedToAcheive = calculator.getGoalGrade();
+		
+	}
+	
+	public void retrieveData() {
 		int child_count = t1.getChildCount();
-		//check to see if dbHelper is null
-		db.open();
-			
-		//2 children per row
 		double[] grades = new double[2];
 		String value = "a";
 		for (int i=0; i<child_count; i++){
@@ -68,21 +81,8 @@ public class Second extends Activity {
 			}
 			System.out.println("getting text from EditTexts");
 			Entry e1 = new Entry (value, grades[0], grades[1]);
-			db.addEntry(e1);			
+			data.addEntry(e1);			
 			}
-		
-		List<Entry> grade_weight = populateList();
-		calculator = new Grade_Calc(grade_weight);
-		double avg = calculator.getAvgGrade();
-		DecimalFormat df = new DecimalFormat("#.##");
-		//System.out.println("avgerage"+avg);
-		String sAvg=String.valueOf(df.format(avg));
-		EditText editTextGrade = (EditText) findViewById(R.id.EditTextGrade);
-		editTextGrade.setText(sAvg);
-		//db.delete();
-		db.close();
-		//double NeedToAcheive = calculator.getGoalGrade();
-		
 	}
 	
 	
@@ -111,29 +111,11 @@ public class Second extends Activity {
 		else
 			return text.getText().toString();
 	}
-	@Override
-	public void onPause(){
-		super.onPause();
-		db.close();	
+
+	public void addRowListener(View v){
+		addRow();
 	}
-	@Override
-	protected void onResume() {
-	    super.onResume();
-	    db.open();
-	    //if(mRowId != -1L)
-	    List<Entry> pre_pop = populateList();
-		System.out.println("after");
-		if (pre_pop.size() > 0){
-			System.out.println("after after");
-			for (int i = 0; i<2 ;i++){
-				System.out.println("grade::::::" +pre_pop.get(i).getGRADE());
-				System.out.println("weight:::::" +pre_pop.get(i).getWEIGHT());
-			}
-		}
-	    populateFields();
-	}
-	
-	public void addRow(View v){
+	public void addRow(){
 		TableRow row = new TableRow(this);
 		row.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
 		EditText description = new EditText(this);
@@ -156,16 +138,11 @@ public class Second extends Activity {
 		weight.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);
 		row.addView(weight);
 		t1.addView(row);
-					
-	}
+	}			
 
 	public List<Entry> populateList(){
 		List<Entry> gradeWeightList = new ArrayList<Entry>();
-		//db.read();
-		System.out.println("made it here");
-		//Cursor required to read database query
-		//String[] columns = {Calc_db.COLUMN_ID, Calc_db.COLUMN_DESCRIPTION_VALUE, Calc_db.COLUMN_GRADE_VALUE, Calc_db.COLUMN_WEIGHT_VALUE};
-		Cursor cursor = db.getBd().query(db.TABLE_NAME, null, null, null, null, null, null);
+		Cursor cursor = data.getBd().query(Calc_db.TABLE_NAME, null, null, null, null, null, null);
 
 		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
 			String dbDescript = cursor.getString(cursor.getColumnIndex(Calc_db.COLUMN_DESCRIPTION_VALUE));
@@ -178,17 +155,36 @@ public class Second extends Activity {
 			System.out.println("weight:"+ dbWeight);
 		} 
 		cursor.close();
-		db.close();
 		
 		return gradeWeightList;
 		
 	}
-	public 	void populateFields(){
-		Cursor cursor = db.getBd().query(db.TABLE_NAME, null, null, null, null, null, null);
-		String dbDescript = cursor.getString(cursor.getColumnIndex(Calc_db.COLUMN_DESCRIPTION_VALUE));
-		System.out.println("String" + dbDescript);
-		cursor.close();
+
+	public void populateTable(){
+		List<Entry> grade_weight = populateList();
+		for (int i = 0; i<(grade_weight.size()-1); i++){
+			addRow();
+		}	
+		int child_count = t1.getChildCount();
+		int j = 0;
+		for (int i=0; i<child_count; i++){
+			TableRow row = (TableRow)t1.getChildAt(i);
+			for (int m=0; m<row.getChildCount();m++){
+				EditText text = (EditText)row.getChildAt(m);
+				if (m == 0){//first textfield accepts letters
+					text.setText((grade_weight.get(j).getDESCRIPT()));
+				}
+				else if (m==1){
+					text.setText(String.valueOf(grade_weight.get(j).getGRADE()));
+				}
+				else
+					text.setText(String.valueOf(grade_weight.get(j).getWEIGHT()));
+			}
+		j++;
+		}
+		
 	}
+
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
