@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
-public class Third extends Activity {
+public class GPAcalc extends Activity {
 
 	@SuppressLint("NewApi")
 	@Override
@@ -18,7 +18,7 @@ public class Third extends Activity {
 		if (Build.VERSION.SDK_INT >=Build.VERSION_CODES.HONEYCOMB){
 			getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
-		Intent intent = getIntent();
+		//Intent intent = getIntent();
 		
 	}	
 

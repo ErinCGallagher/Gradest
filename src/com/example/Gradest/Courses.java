@@ -18,12 +18,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.TextView.BufferType;
 
-public class Second extends Activity {
+
+//This class contains all the course information
+//in the future you will be able to add tabs in order to store multiple courses
+public class Courses extends Activity {
 	private TableLayout t1;
 	private Grade_Calc  calculator;
-	Calc_db data = new Calc_db(Second.this);
+	Calc_db data = new Calc_db(Courses.this);
 
 
 	@SuppressLint("NewApi")
@@ -36,22 +38,25 @@ public class Second extends Activity {
 		}
 		t1 = (TableLayout) findViewById(R.id.mainTable);
 
-		System.out.println("before");
 		data.open();
 		List<Entry> grade_w = populateList();
+		//check and see if the database is empty
 		if (grade_w.size()>0){
+			//if it is not empty, populate the table with data
 			populateTable();
-			System.out.println("yahh");
 		}
-		
 		data.close();
-		}
+	}
 	
-	public void validate(View v){
+	//submit button listener
+	public void submit_button(View v){
 		data.open();
+		//if the table contains data, remove it before adding the updated data
+		data.delete();
 		retrieveData();
 		List<Entry> grade_weight = populateList();
 		data.close();
+		
 		calculator = new Grade_Calc(grade_weight);
 		double avg = calculator.getAvgGrade();
 		DecimalFormat df = new DecimalFormat("#.##");
@@ -59,34 +64,53 @@ public class Second extends Activity {
 		EditText editTextGrade = (EditText) findViewById(R.id.EditTextGrade);
 		editTextGrade.setText(sAvg);
 		
-		//double NeedToAcheive = calculator.getGoalGrade();
-		
+		//double NeedToAcheive = calculator.getGoalGrade();		
 	}
 	
+	//loops through the rows and columns of the table to retrieve user input
+	//stores this input in the Entry class
 	public void retrieveData() {
 		int child_count = t1.getChildCount();
-		double[] grades = new double[2];
-		String value = "a";
+		double grade = 0;
+		double weight = 0;
+		String value = " ";
+		
+		//loop through the rows of the table
 		for (int i=0; i<child_count; i++){
 			TableRow row = (TableRow)t1.getChildAt(i);
-			System.out.println("child" + row.getChildCount());
+			
+			//loop through the columns of each row
 			for (int j=0; j<row.getChildCount();j++){
 				EditText text = (EditText)row.getChildAt(j);
+				
 				if (j == 0){//first textfield accepts letters
 					value = isDescriptValid(text);
 				}
-				else{
-					grades[j-1] = isNumValid(text);
+				else if (j==1){
+					grade = isGradeValid(text);
 				}
+				else
+					weight= isWeightValid(text);
 			}
-			System.out.println("getting text from EditTexts");
-			Entry e1 = new Entry (value, grades[0], grades[1]);
+			Entry e1 = new Entry (value, grade, weight);
 			data.addEntry(e1);			
 			}
 	}
+		
+	//checks to see if the description is valid
+	//can only input letters
+	private String isDescriptValid(EditText text){
+		if (text.getText().toString().trim().length() == 0){
+			text.setError("Cannot be empty");
+		return "no";
+		}
+		else
+			return text.getText().toString();
+	}
 	
-	
-	private double isNumValid(EditText text){
+	//checks to see if grade is valid
+	//must be a decimal and not negative
+	private double isGradeValid(EditText text){
 		if (text.getText().toString().trim().length() == 0){
 			text.setError("Cannot be empty");
 			System.out.println("empty");
@@ -98,23 +122,34 @@ public class Second extends Activity {
 			}
 
 		else {
-
 			return Double.parseDouble(text.getText().toString());
 			}
 	}
 	
-	private String isDescriptValid(EditText text){
+	//checks to see if weight is valid
+	//this value is a percentage 
+	private double isWeightValid(EditText text){
 		if (text.getText().toString().trim().length() == 0){
 			text.setError("Cannot be empty");
-		return "no";
+			System.out.println("empty");
+			return -1.0;
 		}
-		else
-			return text.getText().toString();
+		else if (Double.parseDouble(text.getText().toString()) < 0 ){
+			text.setError("Must be larger than 1");
+			return -1.0;
+			}
+
+		else {
+			return Double.parseDouble(text.getText().toString());
+			}
 	}
 
+	//addRow button listener
 	public void addRowListener(View v){
 		addRow();
 	}
+	
+	//adds a row to the table
 	public void addRow(){
 		TableRow row = new TableRow(this);
 		row.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
@@ -139,7 +174,9 @@ public class Second extends Activity {
 		row.addView(weight);
 		t1.addView(row);
 	}			
-
+	
+	//uses a cursor to iterate through the database 
+	//returns a list of type Entry containing all the data for each row in the table
 	public List<Entry> populateList(){
 		List<Entry> gradeWeightList = new ArrayList<Entry>();
 		Cursor cursor = data.getBd().query(Calc_db.TABLE_NAME, null, null, null, null, null, null);
@@ -150,9 +187,6 @@ public class Second extends Activity {
 			Double dbWeight = cursor.getDouble(cursor.getColumnIndex(Calc_db.COLUMN_WEIGHT_VALUE));
 			Entry e1 = new Entry (dbDescript, dbGrade, dbWeight);
 			gradeWeightList.add(e1);	
-			System.out.println("description" + dbDescript);
-			System.out.println("grade:"+ dbGrade);
-			System.out.println("weight:"+ dbWeight);
 		} 
 		cursor.close();
 		
@@ -160,27 +194,32 @@ public class Second extends Activity {
 		
 	}
 
+	//retrieves all the table data and stores in in a list of type Entry
+	//adds the correct number of rows to the table based on the list size
+	//inputs the data values into the new rows and columns
 	public void populateTable(){
-		List<Entry> grade_weight = populateList();
-		for (int i = 0; i<(grade_weight.size()-1); i++){
-			addRow();
-		}	
+		List<Entry> grab_all = populateList();
+		for (int i = 0; i<(grab_all.size()-1); i++){
+			addRow();		
+		}
+		
 		int child_count = t1.getChildCount();
-		int j = 0;
+		//loops through each row
 		for (int i=0; i<child_count; i++){
 			TableRow row = (TableRow)t1.getChildAt(i);
+			//loops through each column to input data from the table
 			for (int m=0; m<row.getChildCount();m++){
 				EditText text = (EditText)row.getChildAt(m);
+				
 				if (m == 0){//first textfield accepts letters
-					text.setText((grade_weight.get(j).getDESCRIPT()));
+					text.setText((grab_all.get(i).getDESCRIPT()));
 				}
 				else if (m==1){
-					text.setText(String.valueOf(grade_weight.get(j).getGRADE()));
+					text.setText(String.valueOf(grab_all.get(i).getGRADE()));
 				}
 				else
-					text.setText(String.valueOf(grade_weight.get(j).getWEIGHT()));
+					text.setText(String.valueOf(grab_all.get(i).getWEIGHT()));
 			}
-		j++;
 		}
 		
 	}

@@ -21,16 +21,19 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-    public void launchGPA(View view){
-    	Intent i = new Intent(
-    			MainActivity.this,
-    			Third.class);
-    	startActivity(i);
-    }
+   
     public void launchCourses(View view){
     	Intent j = new Intent(
     			MainActivity.this,
-    			Second.class);
+    			Courses.class);
     	startActivity(j);
+    }
+    
+    
+    public void launchGPA(View view){
+    	Intent i = new Intent(
+    			MainActivity.this,
+    			GPAcalc.class);
+    	startActivity(i);
     }
 }

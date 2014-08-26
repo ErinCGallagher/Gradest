@@ -2,6 +2,9 @@ package com.example.Gradest;
 
 import java.util.List;
 
+//this class calculate the average mark based on the grades achieved so far
+//in the future it will also calculate how many marks a student needs 
+//to achieve a specified goal grade. 
 public class Grade_Calc {
 	
 	private double avg_grade;
@@ -11,11 +14,8 @@ public class Grade_Calc {
 	
 	public Grade_Calc(List<Entry> grades){
 		for (int i=0; i<grades.size(); i++ ){
-				marksSoFar+=grades.get(i).getGRADE()*(grades.get(i).getWEIGHT()*10);
-				//System.out.printf("grade:%f",grades.get(i).getGRADE());
-				//System.out.printf("weight:%f",grades.get(i).getWEIGHT());
-				//System.out.printf("description%s\n", grades.get(i).getDESCRIPT());
-				weightSoFar+=(grades.get(i).getWEIGHT()*10);
+				marksSoFar+=grades.get(i).getGRADE()*(grades.get(i).getWEIGHT());
+				weightSoFar+=(grades.get(i).getWEIGHT());
 		}
 		avg_grade = marksSoFar/weightSoFar;
 		//need to catch when goal is less than marks so far 
