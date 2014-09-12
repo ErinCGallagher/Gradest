@@ -28,14 +28,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.39"
                 android:text="Click To View Courses"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                android:textColor="#ffffff" />
 
             <Button
                 android:id="@+id/button1"
                 android:layout_width="95dp"
                 android:layout_height="wrap_content"
                 android:onClick="launchCourses"
-                android:text="Course" />
+                android:text="Course"
+                android:textColor="#ffffff" />
 
         </TableRow>
 
@@ -55,14 +57,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.39"
                 android:text="Click To View GPA"
-                android:textSize="20sp" />
+                android:textSize="20sp" 
+                android:textColor="#ffffff"/>
 
             <Button
                 android:id="@+id/button2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="launchGPA"
-                android:text="GPA" />
+                android:text="GPA"
+                android:textColor="#ffffff" />
 
         </TableRow>
 
