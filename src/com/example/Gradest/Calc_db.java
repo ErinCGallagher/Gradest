@@ -10,6 +10,7 @@ import android.util.Log;
 
 
 public class Calc_db{
+	
 	public static final int DATABASE_VERSION = 1;
 	public static final String DATABASE_NAME = "GradeCalculator";
 	
@@ -19,8 +20,15 @@ public class Calc_db{
 	public static final String COLUMN_WEIGHT_VALUE = "weight";
 	public static final String COLUMN_DESCRIPTION_VALUE = "description";
 	
+	private static final String SQL_CREATE_ENTRIES = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" 
+			+ COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+			COLUMN_DESCRIPTION_VALUE + " TEXT NOT NULL, " + COLUMN_GRADE_VALUE  + 
+			" INTEGER, "  + COLUMN_WEIGHT_VALUE + " INTEGER" + ")";
+	
+	private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
+	
 	private SQLiteDatabase ourDatabase;
-	private DbHelper ourHelper;
+	private DbHelper databaseHelper;
 	private final Context ourContext;
 	
 	private static class DbHelper extends SQLiteOpenHelper{
@@ -33,17 +41,13 @@ public class Calc_db{
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			// TODO Auto-generated method stub
-			db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" 
-					+ COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + 
-					COLUMN_DESCRIPTION_VALUE + " TEXT NOT NULL, " + COLUMN_GRADE_VALUE  + 
-					" INTEGER, "  + COLUMN_WEIGHT_VALUE + " INTEGER" + ")" );		
+			db.execSQL(SQL_CREATE_ENTRIES);		
 		}
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 			// TODO Auto-generated method stub
-			db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+			db.execSQL(SQL_DELETE_ENTRIES);
 			onCreate(db);
-			System.out.println("upgrading");
 		}
 	}
 	
@@ -53,14 +57,14 @@ public class Calc_db{
 	
 	//open DbHelper class
 	public Calc_db open(){
-		ourHelper = new DbHelper(ourContext);
-		ourDatabase = ourHelper.getWritableDatabase();
+		databaseHelper = new DbHelper(ourContext);
+		ourDatabase = databaseHelper.getWritableDatabase();
 		return this;
 	}
 	
 	//close DbHelper class
 	public void close(){
-		ourHelper.close();
+		databaseHelper.close();
 	}
 	
 	public SQLiteDatabase getBd(){
@@ -89,4 +93,5 @@ public class Calc_db{
 			Log.e("Insertion", e.toString());
         }
 	}
+	
 } 
