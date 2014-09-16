@@ -27,6 +27,8 @@ public class Calc_db{
 	
 	private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
 	
+	private String MAXID = COLUMN_ID + "=" + "(SELECT MAX("+COLUMN_ID+") FROM "+TABLE_NAME+")";
+	
 	private SQLiteDatabase ourDatabase;
 	private DbHelper databaseHelper;
 	private final Context ourContext;
@@ -92,6 +94,17 @@ public class Calc_db{
 			e.printStackTrace();
 			Log.e("Insertion", e.toString());
         }
+	}
+	
+	public void deleteLastRow(){
+		try{
+			ourDatabase.delete(TABLE_NAME, MAXID, null);
+
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			Log.e("Deleteing last row", e.toString());
+		}
 	}
 	
 } 

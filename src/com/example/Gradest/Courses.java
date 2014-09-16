@@ -103,7 +103,7 @@ public class Courses extends Activity {
 	private String isDescriptValid(EditText text){
 		if (text.getText().toString().trim().length() == 0){
 			text.setError("Cannot be empty");
-		return "no";
+		return "retry";
 		}
 		else
 			return text.getText().toString();
@@ -115,11 +115,11 @@ public class Courses extends Activity {
 		if (text.getText().toString().trim().length() == 0){
 			text.setError("Cannot be empty");
 			System.out.println("empty");
-			return -1.0;
+			return 0;
 		}
 		else if (Double.parseDouble(text.getText().toString()) > 1 ){
 			text.setError("Must be less than 1");
-			return -1.0;
+			return 0;
 			}
 
 		else {
@@ -133,11 +133,11 @@ public class Courses extends Activity {
 		if (text.getText().toString().trim().length() == 0){
 			text.setError("Cannot be empty");
 			System.out.println("empty");
-			return -1.0;
+			return 0;
 		}
 		else if (Double.parseDouble(text.getText().toString()) < 0 ){
 			text.setError("Must be larger than 1");
-			return -1.0;
+			return 0;
 			}
 
 		else {
@@ -169,7 +169,7 @@ public class Courses extends Activity {
 		grade.setGravity(Gravity.CENTER);
 		grade.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);
 		grade.setTextColor(Color.WHITE);
-		grade.setBackgroundResource(R.drawable.tableshape);
+		grade.setBackground(getResources().getDrawable(R.drawable.tableshape));
 		row.addView(grade);
 		EditText weight = new EditText(this);
 		weight.setHint("0.0");
@@ -230,7 +230,19 @@ public class Courses extends Activity {
 		}
 		
 	}
+	
+	public void delete_button(View v){
+		data.open();
+		data.deleteLastRow();
+		data.close();
+		removeTableRow();
+	}
 
+	public void removeTableRow(){
+		int rowCount = t1.getChildCount();
+		TableRow row = (TableRow)t1.getChildAt(rowCount-1);
+		t1.removeView(row);
+	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
